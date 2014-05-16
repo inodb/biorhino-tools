@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Cut up fasta file in non-overlapping or overlapping parts of equal length.
+"""High pass filter for fasta sequences. Removes fasta sequences shorter than given length.
 """
 import argparse
 from Bio import SeqIO
