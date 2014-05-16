@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Remove fasta ids from a fasta file
+"""Remove fasta sequences from a fasta file by specifying a list of fasta ids to remove
 """
 import argparse
 from Bio import SeqIO
