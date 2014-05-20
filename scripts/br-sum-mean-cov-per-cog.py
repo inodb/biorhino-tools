@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Calculates expression per COG per sample. Outputs a tsv with COG expression in
 each sample. The number of columns is equal to 4 + n where n is the number of
