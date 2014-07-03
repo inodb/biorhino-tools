@@ -15,7 +15,7 @@ def rc(s):
     return ''.join([basecomplement[c] for c in s][::-1])
 
 
-def get_pairs_aligning_to_refs(bamfiles, ref_names_file, read_format):
+def get_pairs_aligning_to_refs(bamfiles, ref_names_file, pair1_file, pair2_file, read_format):
     ref_names = dict([(s.strip(), 0) for s in open(ref_names_file).readlines()])
 
     for i, bamfile in enumerate(bamfiles):
@@ -34,10 +34,18 @@ def get_pairs_aligning_to_refs(bamfiles, ref_names_file, read_format):
                 # TODO: make sure read is only printed once in case of multiple
                 # alignments
                 if read.tid in ref_ids and read.is_proper_pair and read.tid == read.mrnm:
-                    print(read_format.format(qname=read.qname,
-                        pairid=1 if read.is_read1 else 2,
-                        seq=read.seq if not read.is_reverse else rc(read.seq),
-                        qual=read.qual if not read.is_reverse else read.qual[::-1]))
+                    if read.is_read1:
+                        with open(pair1_file, 'w') as ph1:
+                            print(read_format.format(qname=read.qname,
+                                pairid=1,
+                                seq=read.seq if not read.is_reverse else rc(read.seq),
+                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph1)
+                    else:
+                        with open(pair2_file, 'w') as ph2:
+                            print(read_format.format(qname=read.qname,
+                                pairid=2,
+                                seq=read.seq if not read.is_reverse else rc(read.seq),
+                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph2)
 
 
 if __name__ == "__main__":
@@ -46,6 +54,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "bamfiles", nargs="+", help="Bam files\n")
     parser.add_argument("-r", "--ref_names", help="File with one ref name per line. Get those ids.\n")
+    parser.add_argument("-1", "--pair1", help="File with pair1 reads\n")
+    parser.add_argument("-2", "--pair2", help="File with pair2 reads\n")
     parser.add_argument("-f", "--read_format", default="@{qname}/{pairid}\n{seq}\n+\n{qual}",
     help="Python format string for read, you can use qname, pairid, seq and qual (default '@{qname}/{pairid}\\n{seq}\\n+\\n{qual}'")
     args = parser.parse_args()
@@ -54,4 +64,4 @@ if __name__ == "__main__":
     # http://newbebweb.blogspot.pt/2012/02/python-head-ioerror-errno-32-broken.html
     signal(SIGPIPE, SIG_DFL)
 
-    get_pairs_aligning_to_refs(args.bamfiles, args.ref_names, args.read_format)
+    get_pairs_aligning_to_refs(args.bamfiles, args.ref_names, args.pair1, args.pair2, args.read_format)
