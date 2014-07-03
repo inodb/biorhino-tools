@@ -19,7 +19,7 @@ def get_pairs_aligning_to_refs(bamfiles, ref_names_file, pair1_file, pair2_file,
     ref_names = dict([(s.strip(), 0) for s in open(ref_names_file).readlines()])
 
     for i, bamfile in enumerate(bamfiles):
-        with pysam.Samfile(bamfile, 'rb') as bamh:
+        with pysam.Samfile(bamfile, 'rb') as bamh, open(pair1_file, 'w') as ph1, open(pair2_file, 'w') as ph2:
             ref_ids = [bamh.gettid(r) for r in ref_names]
 
             for read in bamh:
@@ -35,17 +35,15 @@ def get_pairs_aligning_to_refs(bamfiles, ref_names_file, pair1_file, pair2_file,
                 # alignments
                 if read.tid in ref_ids and read.is_proper_pair and read.tid == read.mrnm:
                     if read.is_read1:
-                        with open(pair1_file, 'w') as ph1:
-                            print(read_format.format(qname=read.qname,
-                                pairid=1,
-                                seq=read.seq if not read.is_reverse else rc(read.seq),
-                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph1)
+                        print(read_format.format(qname=read.qname,
+                            pairid=1,
+                            seq=read.seq if not read.is_reverse else rc(read.seq),
+                            qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph1)
                     else:
-                        with open(pair2_file, 'w') as ph2:
-                            print(read_format.format(qname=read.qname,
-                                pairid=2,
-                                seq=read.seq if not read.is_reverse else rc(read.seq),
-                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph2)
+                        print(read_format.format(qname=read.qname,
+                            pairid=2,
+                            seq=read.seq if not read.is_reverse else rc(read.seq),
+                            qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph2)
 
 
 if __name__ == "__main__":
