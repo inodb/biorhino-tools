@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-"""Remove fasta sequences from a fasta file by specifying a list of fasta ids to remove
+"""Get pairs that properly align to given references. Bam file should be sorted by read name.
 """
 from __future__ import print_function
 
 import argparse
+import sys
 from signal import signal, SIGPIPE, SIG_DFL
 
 import pysam
@@ -22,11 +23,35 @@ def get_pairs_aligning_to_refs(bamfiles, ref_names_file, pair1_file, pair2_file,
         with pysam.Samfile(bamfile, 'rb') as bamh, open(pair1_file, 'w') as ph1, open(pair2_file, 'w') as ph2:
             ref_ids = [bamh.gettid(r) for r in ref_names]
 
+            prev_read1 = ""
+            prev_read2 = ""
             for read in bamh:
                 # check if read is aligned
                 try:
                     ref = bamh.getrname(read.tid)
                 except ValueError:
+                    continue
+
+                # check if read is different from previous read to prevent
+                # duplicates. TODO: check best scoring alignment instead of
+                # first, the first bad alignments might prevent proper
+                # alignments from being checked and thereby pairs from being
+                # outputted
+                if read.is_read1:
+                    if read.qname == prev_read1:
+                        print("Warning: Read1 %s aligned twice, taking first alignment".format(read.qname), file=sys.err)
+                        continue
+                    else:
+                        prev_read1 = read.qname
+                else:
+                    if read.qname == prev_read2:
+                        print("Warning: Read 2 %s aligned twice".format(read.qname), file=sys.err)
+                        continue
+                    else:
+                        prev_read2 = read.qname
+                if read.is_read1 and read.qname == prev_read1:
+                    continue
+                if not read.is_read1 and read.qname == prev_read2:
                     continue
 
                 # check if the read is aligned to given ref and if both reads
