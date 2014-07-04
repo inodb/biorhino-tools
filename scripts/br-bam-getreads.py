@@ -32,43 +32,27 @@ def get_pairs_aligning_to_refs(bamfiles, ref_names_file, pair1_file, pair2_file,
                 except ValueError:
                     continue
 
-                # check if read is different from previous read to prevent
-                # duplicates. TODO: check best scoring alignment instead of
-                # first, the first bad alignments might prevent proper
-                # alignments from being checked and thereby pairs from being
-                # outputted
-                if read.is_read1:
-                    if read.qname == prev_read1:
-                        print("Warning: Read1 %s aligned twice, taking first alignment".format(read.qname), file=sys.err)
-                        continue
-                    else:
-                        prev_read1 = read.qname
-                else:
-                    if read.qname == prev_read2:
-                        print("Warning: Read 2 %s aligned twice".format(read.qname), file=sys.err)
-                        continue
-                    else:
-                        prev_read2 = read.qname
-                if read.is_read1 and read.qname == prev_read1:
-                    continue
-                if not read.is_read1 and read.qname == prev_read2:
-                    continue
-
                 # check if the read is aligned to given ref and if both reads
                 # of the pair properly align to the same reference
-                # TODO: make sure read is only printed once in case of multiple
-                # alignments
                 if read.tid in ref_ids and read.is_proper_pair and read.tid == read.mrnm:
                     if read.is_read1:
-                        print(read_format.format(qname=read.qname,
-                            pairid=1,
-                            seq=read.seq if not read.is_reverse else rc(read.seq),
-                            qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph1)
+                        # make sure read is only printed once in case of
+                        # multiple alignment
+                        if read.qname != prev_read1:
+                            print(read_format.format(qname=read.qname,
+                                pairid=1,
+                                seq=read.seq if not read.is_reverse else rc(read.seq),
+                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph1)
+                            prev_read1 = read.qname
                     else:
-                        print(read_format.format(qname=read.qname,
-                            pairid=2,
-                            seq=read.seq if not read.is_reverse else rc(read.seq),
-                            qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph2)
+                        # make sure read is only printed once in case of
+                        # multiple alignment
+                        if read.qname != prev_read2:
+                            print(read_format.format(qname=read.qname,
+                                pairid=2,
+                                seq=read.seq if not read.is_reverse else rc(read.seq),
+                                qual=read.qual if not read.is_reverse else read.qual[::-1]), file=ph2)
+                            prev_read2 = read.qname
 
 
 if __name__ == "__main__":
