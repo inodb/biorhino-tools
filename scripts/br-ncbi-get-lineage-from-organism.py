@@ -5,7 +5,7 @@ import argparse
 import warnings
 import sys
 
-NCBI_TAXONOMY_BROWSER_ID = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={tax_id}"
+NCBI_TAXONOMY_BROWSER_ID = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={tax_id}"
 NCBI_TAXONOMY_BROWSER_NAME = "http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name={name}"
 TAX_ID_LINE_START = '<em>Taxonomy ID: </em>'
 TAX_ID_END = '<br'
